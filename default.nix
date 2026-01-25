@@ -1,18 +1,17 @@
-{pkgs}:
+{pkgs ? import <nixpkgs> {}, ...}:
 pkgs.stdenvNoCC.mkDerivation {
   pname = "Cartograph CF Nerd Font";
   version = "v1.0.3";
-  src = pkgs.fetchFromGitHub {
-    owner = "0qln";
-    repo = "Cartograph";
-    rev = "3a23f288eee24a36005ec30fd9778a5d6a854510";
-    hash = "sha256-wk4SckewRtmVdT7VCeEndpIBwrWqQLn6mp2DZcqMnIE=";
-  };
+  src = ./.;
 
   buildInputs = with pkgs; [
     fontforge
     nerd-font-patcher
   ];
+
+  configurePhase = ''
+    cd src
+  '';
 
   buildPhase = ''
     mkdir -p patched-fonts
