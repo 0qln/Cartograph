@@ -8,35 +8,14 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v4
     - uses: cachix/install-nix-action@v31
       with:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
     - run: nix build
     - name: Archive build results
-      run: |
-        # Get the tag name without refs/tags/ prefix
-        TAG_NAME=${GITHUB_REF#refs/tags/}
-        # Create archive name based on tag
-        ARCHIVE_NAME="${TAG_NAME}.tar.gz"
-        # Archive the result directory (following symlinks with -h flag)
-        tar -czhf "$ARCHIVE_NAME" -C result .
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: tar -czhf "${{ github.ref_name }}.tar.gz" -C result .
+    - name: Create Release and Upload Asset
+      uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ github.ref_name }}  # Use ref_name instead of ref
-        release_name: Release ${{ github.ref_name }}
-        draft: false
-        prerelease: false
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./${{ github.ref_name }}.tar.gz
-        asset_name: ${{ github.ref_name }}.tar.gz
-        asset_content_type: application/tar+gzip
+        files: ${{ github.ref_name }}.tar.gz
